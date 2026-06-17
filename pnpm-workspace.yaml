@@ -1,5 +1,6 @@
 packages:
   - 'app'
+  - 'website'
 
 allowBuilds:
   esbuild: true
