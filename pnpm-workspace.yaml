@@ -1,0 +1,14 @@
+packages:
+  - 'app'
+
+allowBuilds:
+  esbuild: true
+  sharp: true
+  vue-demi: true
+  workerd: true
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - workerd
+  - vue-demi

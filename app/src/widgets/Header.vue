@@ -1,0 +1,92 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useAppStore } from '@/entities/app/model/store'
+import { Button } from '@/components/ui/button'
+import { Moon, Sun, Settings, PanelLeft, PanelRight } from 'lucide-vue-next'
+
+const appStore = useAppStore()
+import pkg from '../../package.json'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
+const props = defineProps<{
+  activeTool: string
+  scenesOpen: boolean
+  assetsOpen: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:activeTool', tool: string): void
+  (e: 'update:scenesOpen', val: boolean): void
+  (e: 'update:assetsOpen', val: boolean): void
+}>()
+
+const isDark = ref(document.documentElement.classList.contains('dark'))
+function toggleTheme() {
+  const root = document.documentElement
+  isDark.value = !isDark.value
+  if (isDark.value) {
+    root.classList.add('dark')
+    localStorage.setItem('theme', 'dark')
+  } else {
+    root.classList.remove('dark')
+    localStorage.setItem('theme', 'light')
+  }
+}
+
+</script>
+
+<template>
+  <header class="flex items-center justify-between px-5 h-12 border-b border-border bg-card select-none shrink-0 z-30">
+    <!-- Left: Brand / Title -->
+    <div class="flex items-center gap-2 shrink-0">
+      <div class="flex items-center gap-2">
+        <img src="/logo.png" class="w-7 h-7 object-contain rounded-md drop-shadow-sm" alt="Logo" />
+        <div class="flex flex-col justify-center">
+          <h1 class="text-sm font-bold tracking-tight text-foreground leading-none mb-0.5 whitespace-nowrap">{{ t('app.title') }}</h1>
+          <span class="text-[9px] text-muted-foreground leading-none whitespace-nowrap">{{ t('app.by') }}</span>
+        </div>
+      </div>
+      <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-accent/10 text-accent font-semibold tracking-wide border border-accent/20 ml-1 whitespace-nowrap">v{{ pkg.version }}</span>
+    </div>
+
+
+
+    <!-- Right: Global Actions -->
+    <div class="flex items-center justify-end gap-2.5 w-1/4 min-w-[180px]">
+      <!-- VS Code Style Sidebar Layout Controls -->
+      <div class="flex items-center gap-0.5 mr-1">
+        <button
+          @click="emit('update:scenesOpen', !props.scenesOpen)"
+          class="p-1.5 rounded-md hover:bg-secondary transition-all duration-150 shrink-0"
+          :class="props.scenesOpen ? 'text-accent' : 'text-muted-foreground hover:text-foreground'"
+          :title="t('header.sidebar_scenes')"
+        >
+          <PanelLeft class="w-4 h-4" />
+        </button>
+        <button
+          v-if="activeTool === 'vcam'"
+          @click="emit('update:assetsOpen', !props.assetsOpen)"
+          class="p-1.5 rounded-md hover:bg-secondary transition-all duration-150 shrink-0"
+          :class="props.assetsOpen ? 'text-accent' : 'text-muted-foreground hover:text-foreground'"
+          :title="t('header.sidebar_assets')"
+        >
+          <PanelRight class="w-4 h-4" />
+        </button>
+      </div>
+
+      <div class="h-4 w-px bg-border"></div>
+
+      <!-- Theme Toggle -->
+      <Button variant="ghost" size="icon" class="h-8 w-8 rounded-full border border-border" @click="toggleTheme" :title="t('header.theme_toggle')">
+        <Sun v-if="!isDark" class="w-4 h-4" />
+        <Moon v-else class="w-4 h-4" />
+      </Button>
+      <!-- App Settings Gear -->
+      <Button variant="ghost" size="icon" class="h-8 w-8 rounded-full border border-border" @click="appStore.isSettingsOpen = true" :title="t('header.settings_tooltip')">
+        <Settings class="w-4 h-4" />
+      </Button>
+    </div>
+  </header>
+</template>

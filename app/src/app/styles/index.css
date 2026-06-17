@@ -1,0 +1,140 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 99%;
+    --foreground: 240 10% 8%;
+
+    --muted: 240 5% 93%;
+    --muted-foreground: 240 4% 46%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 8%;
+
+    --border: 240 6% 88%;
+    --input: 240 6% 88%;
+
+    --primary: 275 80% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 93%;
+    --secondary-foreground: 240 6% 10%;
+
+    --accent: 275 80% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    --ring: 275 80% 60%;
+
+    --radius: 0.5rem;
+
+    /* Custom tokens */
+    --surface: 240 5% 96%;
+    --surface-hover: 240 5% 91%;
+    --glow: 275 100% 65%;
+    --success: 160 70% 40%;
+    --success-bg: 160 40% 94%;
+    --preview-bg: 240 5% 93%; /* Light gray instead of black */
+    --thumbnail-bg: 240 5% 90%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 240 6% 93%;
+
+    --muted: 240 6% 12%;
+    --muted-foreground: 240 5% 55%;
+
+    --popover: 240 8% 8%;
+    --popover-foreground: 240 6% 93%;
+
+    --card: 240 8% 6%;
+    --card-foreground: 240 6% 93%;
+
+    --border: 240 6% 18%;
+    --input: 240 6% 18%;
+
+    --primary: 275 90% 70%;
+    --primary-foreground: 240 10% 4%;
+
+    --secondary: 240 6% 14%;
+    --secondary-foreground: 240 6% 93%;
+
+    --accent: 275 80% 65%;
+    --accent-foreground: 240 6% 93%;
+
+    --destructive: 0 72% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --ring: 275 90% 70%;
+
+    /* Custom tokens */
+    --surface: 240 8% 9%;
+    --surface-hover: 240 6% 14%;
+    --glow: 275 100% 75%;
+    --success: 174 100% 40%;
+    --success-bg: 174 60% 12%;
+    --preview-bg: 240 10% 4%;
+    --thumbnail-bg: 240 8% 12%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    outline: none !important;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Utility: glow accent */
+.glow-accent {
+  box-shadow: 0 0 14px -2px hsl(var(--glow) / 0.4);
+}
+.glow-accent-sm {
+  box-shadow: 0 0 10px -2px hsl(var(--glow) / 0.3);
+}
+
+/* Transition helper */
+.transition-smooth {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide scrollbar but allow scroll */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

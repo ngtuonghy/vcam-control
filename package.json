@@ -1,0 +1,8 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -F app tauri dev"
+  },
+  "version": "0.0.1"
+}
