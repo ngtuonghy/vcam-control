@@ -7,7 +7,7 @@ const i18n = {
   en: {
     heroTitle: html`Take Control of Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-glow to-primary bg-[length:200%_auto] animate-gradient">Virtual Camera</span> for Dev`,
     heroDesc: 'A modern, lightweight interface to control your virtual camera. Easily bind global hotkeys and manage your camera status without breaking focus.',
-    downloadBtn: (version: string) => `Download for Windows ${version}`,
+    downloadBtn: 'Download for Windows',
     exploreBtn: 'Explore Features',
     osNote: 'Linux and macOS are not supported yet.',
     whyUse: 'Why use VCam Control?',
@@ -23,7 +23,7 @@ const i18n = {
   vi: {
     heroTitle: html`Kiểm Soát <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-glow to-primary bg-[length:200%_auto] animate-gradient">Camera Ảo</span> Cho Dev`,
     heroDesc: 'Giao diện điều khiển camera ảo hiện đại, siêu nhẹ. Dễ dàng cài đặt phím tắt toàn cầu và quản lý trạng thái camera mà không làm gián đoạn công việc.',
-    downloadBtn: (version: string) => `Tải cho Windows ${version}`,
+    downloadBtn: 'Tải cho Windows',
     exploreBtn: 'Khám phá tính năng',
     osNote: 'Hiện chưa hỗ trợ Linux và macOS.',
     whyUse: 'Tại sao nên dùng VCam Control?',
@@ -40,21 +40,23 @@ const i18n = {
 
 @customElement('vcam-landing')
 export class VcamLanding extends LitElement {
-  @state() theme: 'light' | 'dark' = 'dark'
+  @state() theme: 'light' | 'dark' | 'system' = 'dark'
   @state() downloadUrl: string = 'https://github.com/ngtuonghy/vcam-control/releases/latest'
-  @state() version: string = '(v0.1.0)'
   @state() lang: 'en' | 'vi' = 'en'
 
   private titleSplitter: any = null;
   private authorSplitter: any = null;
 
+  private _systemMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  private _systemListener = () => { if (this.theme === 'system') this.applyTheme(); };
+
   constructor() {
     super();
-    const storedTheme = localStorage.getItem('theme') as 'light' | 'dark'
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    this.theme = storedTheme || (prefersDark ? 'dark' : 'light')
-    this.applyTheme()
-    
+    const storedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system';
+    this.theme = storedTheme || 'dark';
+    this.applyTheme();
+    this._systemMediaQuery.addEventListener('change', this._systemListener);
+
     const storedLang = localStorage.getItem('lang') as 'en' | 'vi';
     if (storedLang) {
       this.lang = storedLang;
@@ -63,26 +65,27 @@ export class VcamLanding extends LitElement {
     }
   }
 
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._systemMediaQuery.removeEventListener('change', this._systemListener);
+  }
+
   applyTheme() {
-    document.documentElement.classList.toggle('dark', this.theme === 'dark');
+    const isDark = this.theme === 'dark' ||
+      (this.theme === 'system' && this._systemMediaQuery.matches);
+    document.documentElement.classList.toggle('dark', isDark);
   }
 
   cycleTheme() {
-    this.theme = this.theme === 'light' ? 'dark' : 'light';
-    localStorage.setItem('theme', this.theme);
+    const order: Array<'light' | 'dark' | 'system'> = ['light', 'dark', 'system'];
+    const next = order[(order.indexOf(this.theme) + 1) % order.length];
+    this.theme = next;
+    localStorage.setItem('theme', next);
     this.applyTheme();
   }
 
   firstUpdated() {
     this.fetchLatestRelease();
-
-    animate(this.querySelectorAll('.anim-hero'), {
-      translateY: [30, 0],
-      opacity: [0, 1],
-      ease: 'outExpo',
-      duration: 1200,
-      delay: stagger(150, { start: 200 })
-    });
 
     animate(this.querySelectorAll('.anim-hero-title'), {
       translateY: [60, 0],
@@ -91,34 +94,19 @@ export class VcamLanding extends LitElement {
       delay: 100
     });
 
-    this.initAnimations();
+    animate(this.querySelectorAll('.anim-hero'), {
+      translateY: [30, 0],
+      opacity: [0, 1],
+      ease: 'outExpo',
+      duration: 1000,
+      delay: stagger(150, { start: 200 })
+    });
+
+    this.initBlobAnimations();
+    this.initScrollAnimations();
   }
 
-  initAnimations() {
-    animate(this.querySelectorAll('.anim-hero'), {
-      translateY: [60, 0],
-      opacity: [0, 1],
-      ease: spring({ mass: 1, stiffness: 100, damping: 12, velocity: 0 }),
-      delay: stagger(100, { start: 300 })
-    });
-
-    animate(this.querySelectorAll('.anim-card'), {
-      translateY: [50, 0],
-      opacity: [0, 1],
-      ease: spring({ mass: 1, stiffness: 90, damping: 10, velocity: 0 }),
-      delay: stagger(150, { start: 600 })
-    });
-
-    this.runTextSplits();
-
-    animate(this.querySelectorAll('.anim-icon'), {
-      scale: [0.2, 1],
-      rotate: ['-15deg', '0deg'],
-      opacity: [0, 1],
-      ease: spring({ mass: 1, stiffness: 80, damping: 10, velocity: 0 }),
-      delay: stagger(150, { start: 800 })
-    });
-
+  initBlobAnimations() {
     animate(this.querySelectorAll('.anim-blob-1'), {
       scale: [1, 1.1, 1],
       translateX: ['-50%', '-45%', '-50%'],
@@ -136,6 +124,51 @@ export class VcamLanding extends LitElement {
       duration: 10000,
       loop: true
     });
+  }
+
+  initScrollAnimations() {
+    const featureSection = this.querySelector('#features');
+    if (!featureSection) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            observer.disconnect();
+
+            const heading = featureSection.querySelector('.anim-section-title');
+            if (heading) {
+              animate(heading, {
+                translateY: [30, 0],
+                opacity: [0, 1],
+                ease: 'outExpo',
+                duration: 800,
+              });
+            }
+
+            animate(featureSection.querySelectorAll('.anim-card'), {
+              translateY: [50, 0],
+              opacity: [0, 1],
+              ease: spring({ mass: 1, stiffness: 90, damping: 10, velocity: 0 }),
+              delay: stagger(150, { start: 150 })
+            });
+
+            animate(featureSection.querySelectorAll('.anim-icon'), {
+              scale: [0.2, 1],
+              rotate: ['-15deg', '0deg'],
+              opacity: [0, 1],
+              ease: spring({ mass: 1, stiffness: 80, damping: 10, velocity: 0 }),
+              delay: stagger(150, { start: 300 })
+            });
+
+            this.runTextSplits();
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(featureSection);
   }
 
   runTextSplits() {
@@ -177,7 +210,6 @@ export class VcamLanding extends LitElement {
         const data = await response.json();
         const asset = data.assets.find((a: any) => a.name.endsWith('-setup.exe') || a.name.endsWith('.exe'));
         if (asset) this.downloadUrl = asset.browser_download_url;
-        if (data.tag_name) this.version = `(${data.tag_name})`;
       }
     } catch (error) { console.error(error); }
   }
@@ -203,8 +235,13 @@ export class VcamLanding extends LitElement {
               <button @click=${this.toggleLanguage} class="w-9 h-9 flex items-center justify-center rounded-md bg-surface hover:bg-surface-hover transition-colors text-xs font-bold text-muted-foreground hover:text-foreground border border-border" title="Switch Language">
                 ${this.lang === 'en' ? 'EN' : 'VI'}
               </button>
-              <button @click=${this.cycleTheme} class="w-9 h-9 flex items-center justify-center rounded-md bg-surface hover:bg-surface-hover transition-colors text-muted-foreground hover:text-foreground border border-border" title="Toggle Theme">
-                ${this.theme === 'light' ? html`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>` : html`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`}
+              <button @click=${this.cycleTheme} class="w-9 h-9 flex items-center justify-center rounded-md bg-surface hover:bg-surface-hover transition-colors text-muted-foreground hover:text-foreground border border-border" title="Toggle Theme: ${this.theme}">
+                ${this.theme === 'light'
+                  ? html`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`
+                  : this.theme === 'dark'
+                  ? html`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`
+                  : html`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>`
+                }
               </button>
             </div>
           </nav>
@@ -223,7 +260,7 @@ export class VcamLanding extends LitElement {
           </p>
           <div class="anim-hero opacity-0 flex flex-col sm:flex-row gap-4">
             <a href=${this.downloadUrl} class="px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-lg shadow-lg shadow-primary/25 transition-all">
-              ${t.downloadBtn(this.version)}
+              ${t.downloadBtn}
             </a>
             <a href="#features" class="px-8 py-4 bg-secondary text-secondary-foreground font-semibold rounded-lg transition-all border border-border">
               ${t.exploreBtn}
@@ -236,7 +273,7 @@ export class VcamLanding extends LitElement {
 
         <section id="features" class="py-24 bg-surface border-t border-border">
           <div class="container mx-auto px-6 max-w-5xl">
-            <h2 class="anim-hero opacity-0 text-3xl font-bold tracking-tight mb-12 text-center">${t.whyUse}</h2>
+            <h2 class="anim-section-title opacity-0 text-3xl font-bold tracking-tight mb-12 text-center">${t.whyUse}</h2>
             <div class="grid md:grid-cols-3 gap-8">
               <div class="anim-card opacity-0 bg-card p-8 rounded-lg border border-border shadow-sm">
                 <div class="anim-icon opacity-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 text-primary">
