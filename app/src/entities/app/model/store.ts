@@ -161,27 +161,28 @@ export const useAppStore = defineStore('app', () => {
 
   async function adjustCurrentTransform(action: 'up' | 'down' | 'left' | 'right' | 'zoom_in' | 'zoom_out') {
     const group = activeGroup.value;
-    if (!group || currentImageIndex.value === -1) {
+    const img = liveCodeOverride.value || (group && currentImageIndex.value !== -1 ? group.images[currentImageIndex.value] : null);
+
+    if (!img) {
       alert("Vui lòng CHỌN 1 ẢNH TRÊN GIAO DIỆN trước khi dùng phím tắt di chuyển/zoom!");
       return;
     }
 
     try {
-      const img = group.images[currentImageIndex.value];
-      if (!img || !img.transform) return;
+      if (!img.transform) return;
 
       const t = img.transform as any;
       const isBounded = t.boundsType !== 'OBS_BOUNDS_NONE';
       const step = 10;
 
       if (action === 'up') {
-        if (t.positionY !== undefined && t.positionY !== null) t.positionY = Number(t.positionY) - step;
+        t.positionY = Number(t.positionY || 0) - step;
       } else if (action === 'down') {
-        if (t.positionY !== undefined && t.positionY !== null) t.positionY = Number(t.positionY) + step;
+        t.positionY = Number(t.positionY || 0) + step;
       } else if (action === 'left') {
-        if (t.positionX !== undefined && t.positionX !== null) t.positionX = Number(t.positionX) - step;
+        t.positionX = Number(t.positionX || 0) - step;
       } else if (action === 'right') {
-        if (t.positionX !== undefined && t.positionX !== null) t.positionX = Number(t.positionX) + step;
+        t.positionX = Number(t.positionX || 0) + step;
       } else if (action === 'zoom_in' || action === 'zoom_out') {
         const zoomStep = 0.05;
         const zoomFactor = action === 'zoom_in' ? (1 + zoomStep) : (1 - zoomStep);
@@ -192,10 +193,10 @@ export const useAppStore = defineStore('app', () => {
           const newW = oldW * zoomFactor;
           const newH = oldH * zoomFactor;
 
-          if (t.boundsWidth !== undefined && t.boundsWidth !== null) t.boundsWidth = newW;
-          if (t.boundsHeight !== undefined && t.boundsHeight !== null) t.boundsHeight = newH;
-          if (t.positionX !== undefined && t.positionX !== null) t.positionX = Number(t.positionX) - (newW - oldW) / 2;
-          if (t.positionY !== undefined && t.positionY !== null) t.positionY = Number(t.positionY) - (newH - oldH) / 2;
+          t.boundsWidth = newW;
+          t.boundsHeight = newH;
+          t.positionX = Number(t.positionX || 0) - (newW - oldW) / 2;
+          t.positionY = Number(t.positionY || 0) - (newH - oldH) / 2;
         } else {
           const currentScaleX = Number(t.scaleX ?? 1);
           const currentScaleY = Number(t.scaleY ?? 1);
@@ -204,14 +205,14 @@ export const useAppStore = defineStore('app', () => {
           const zoomAmountX = signX * zoomStep * (action === 'zoom_in' ? 1 : -1);
           const zoomAmountY = signY * zoomStep * (action === 'zoom_in' ? 1 : -1);
 
-          if (t.scaleX !== undefined && t.scaleX !== null) t.scaleX = currentScaleX + zoomAmountX;
-          if (t.scaleY !== undefined && t.scaleY !== null) t.scaleY = currentScaleY + zoomAmountY;
+          t.scaleX = currentScaleX + zoomAmountX;
+          t.scaleY = currentScaleY + zoomAmountY;
 
           const sourceW = Number(t.sourceWidth || 1920);
           const sourceH = Number(t.sourceHeight || 1080);
 
-          if (t.positionX !== undefined && t.positionX !== null) t.positionX = Number(t.positionX) - (zoomAmountX * sourceW) / 2;
-          if (t.positionY !== undefined && t.positionY !== null) t.positionY = Number(t.positionY) - (zoomAmountY * sourceH) / 2;
+          t.positionX = Number(t.positionX || 0) - (zoomAmountX * sourceW) / 2;
+          t.positionY = Number(t.positionY || 0) - (zoomAmountY * sourceH) / 2;
         }
       }
 
@@ -221,43 +222,88 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
-  // Auto-save logic replaces manual save, we can keep the function or remove it.
-  // We'll just remove the manual export later if not needed.
-
   function handleNextImage() {
+    if (liveCodeOverride.value && generatorHistory.value.length > 0) {
+      let idx = generatorHistory.value.findIndex(item => item.id === liveCodeOverride.value!.id);
+      let nextIdx = idx + 1;
+      if (nextIdx >= generatorHistory.value.length) nextIdx = 0;
+      setLiveCodeOverride(generatorHistory.value[nextIdx]);
+      return;
+    }
+
     const group = activeGroup.value;
     if (!group || group.images.length === 0) return;
 
-    let nextIdx = currentImageIndex.value + 1;
-    if (nextIdx >= group.images.length) nextIdx = 0; // wrap around
-    triggerImage(group.images[nextIdx].path, nextIdx);
+    let idx = currentImageIndex.value;
+    idx = idx + 1;
+    if (idx >= group.images.length) idx = 0;
+    currentImageIndex.value = idx;
   }
 
   function handlePrevImage() {
+    if (liveCodeOverride.value && generatorHistory.value.length > 0) {
+      let idx = generatorHistory.value.findIndex(item => item.id === liveCodeOverride.value!.id);
+      let prevIdx = idx - 1;
+      if (prevIdx < 0) prevIdx = generatorHistory.value.length - 1;
+      setLiveCodeOverride(generatorHistory.value[prevIdx]);
+      return;
+    }
+
     const group = activeGroup.value;
     if (!group || group.images.length === 0) return;
 
-    let prevIdx = currentImageIndex.value - 1;
-    if (prevIdx < 0) prevIdx = group.images.length - 1; // wrap around
-    triggerImage(group.images[prevIdx].path, prevIdx);
+    let idx = currentImageIndex.value;
+    idx = idx - 1;
+    if (idx < 0) idx = group.images.length - 1;
+    currentImageIndex.value = idx;
   }
 
   function handleNextScene() {
-    if (groups.value.length === 0) return;
-    const currentId = activeGroupId.value;
-    let idx = groups.value.findIndex(g => g.id === currentId);
-    let nextIdx = idx + 1;
-    if (nextIdx >= groups.value.length) nextIdx = 0;
-    setActiveGroup(groups.value[nextIdx].id);
+    const inGenerator = isGeneratorOpen.value && generatorMode.value === 'quick';
+    let currentIdx = inGenerator ? groups.value.length : groups.value.findIndex(g => g.id === activeGroupId.value);
+    
+    let nextIdx = currentIdx + 1;
+    if (nextIdx > groups.value.length) nextIdx = 0;
+    
+    if (nextIdx === groups.value.length) {
+      isGeneratorOpen.value = true;
+      generatorMode.value = 'quick';
+      if (generatorHistory.value && generatorHistory.value.length > 0) {
+        setLiveCodeOverride(generatorHistory.value[0]);
+      }
+    } else {
+      if (inGenerator || liveCodeOverride.value) {
+        clearLiveCodeOverride();
+        isGeneratorOpen.value = false;
+      }
+      if (groups.value.length > 0) {
+        setActiveGroup(groups.value[nextIdx].id);
+      }
+    }
   }
 
   function handlePrevScene() {
-    if (groups.value.length === 0) return;
-    const currentId = activeGroupId.value;
-    let idx = groups.value.findIndex(g => g.id === currentId);
-    let prevIdx = idx - 1;
-    if (prevIdx < 0) prevIdx = groups.value.length - 1;
-    setActiveGroup(groups.value[prevIdx].id);
+    const inGenerator = isGeneratorOpen.value && generatorMode.value === 'quick';
+    let currentIdx = inGenerator ? groups.value.length : groups.value.findIndex(g => g.id === activeGroupId.value);
+    
+    let prevIdx = currentIdx - 1;
+    if (prevIdx < 0) prevIdx = groups.value.length;
+    
+    if (prevIdx === groups.value.length) {
+      isGeneratorOpen.value = true;
+      generatorMode.value = 'quick';
+      if (generatorHistory.value && generatorHistory.value.length > 0) {
+        setLiveCodeOverride(generatorHistory.value[0]);
+      }
+    } else {
+      if (inGenerator || liveCodeOverride.value) {
+        clearLiveCodeOverride();
+        isGeneratorOpen.value = false;
+      }
+      if (groups.value.length > 0) {
+        setActiveGroup(groups.value[prevIdx].id);
+      }
+    }
   }
 
   function togglePreview() {
@@ -455,6 +501,58 @@ export const useAppStore = defineStore('app', () => {
     liveCodeOverride.value = null;
   }
 
+  // Updater State
+  const updateState = ref<'idle' | 'checking' | 'downloading' | 'ready'>('idle');
+  const updateDownloadProgress = ref(0);
+  const readyUpdate = ref<any>(null);
+
+  async function checkAppUpdate(silent = true) {
+    if (updateState.value !== 'idle') return null;
+
+    try {
+      updateState.value = 'checking';
+      const { check } = await import('@tauri-apps/plugin-updater');
+      const update = await check();
+      
+      if (update) {
+        updateState.value = 'downloading';
+        updateDownloadProgress.value = 0;
+        
+        let contentLength = 0;
+        let downloaded = 0;
+        
+        await update.download((event: any) => {
+          if (event.event === 'Started') {
+            contentLength = event.data.contentLength || 0;
+          } else if (event.event === 'Progress') {
+            downloaded += event.data.chunkLength;
+            if (contentLength > 0) {
+              updateDownloadProgress.value = Math.round((downloaded / contentLength) * 100);
+            }
+          }
+        });
+        
+        readyUpdate.value = update;
+        updateState.value = 'ready';
+        return update;
+      } else {
+        updateState.value = 'idle';
+        return null;
+      }
+    } catch (err) {
+      console.error('Auto update error:', err);
+      updateState.value = 'idle';
+      if (!silent) throw err;
+      return null;
+    }
+  }
+
+  async function installAppUpdate() {
+    if (updateState.value === 'ready' && readyUpdate.value) {
+      await readyUpdate.value.install();
+    }
+  }
+
   return {
     activeGroupId,
     groups,
@@ -489,6 +587,12 @@ export const useAppStore = defineStore('app', () => {
     isVcamActive,
     toggleVcam,
     setLiveCodeOverride,
-    clearLiveCodeOverride
+    clearLiveCodeOverride,
+    
+    updateState,
+    updateDownloadProgress,
+    readyUpdate,
+    checkAppUpdate,
+    installAppUpdate
   };
 });

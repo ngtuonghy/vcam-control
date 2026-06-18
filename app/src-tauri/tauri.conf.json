@@ -30,7 +30,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://github.com/ngtuonghy/control-virtual-camera/releases/latest/download/latest.json"
+        "https://github.com/ngtuonghy/vcam-control/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEU2NTVDMTMxRkQ1NThFOEYKUldTUGpsWDlNY0ZWNWphTU1wSWxmTEdldHgzd0Z6dnY2MzFYem5sOGVTTW93ZTN3UExrNGRYWFoK",
       "windows": {

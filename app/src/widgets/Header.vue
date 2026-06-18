@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAppStore } from '@/entities/app/model/store'
 import { Button } from '@/components/ui/button'
-import { Moon, Sun, Settings, PanelLeft, PanelRight } from 'lucide-vue-next'
+import { Moon, Sun, Settings, PanelLeft, PanelRight, RefreshCw, Loader2 } from 'lucide-vue-next'
 
 const appStore = useAppStore()
 import pkg from '../../package.json'
@@ -35,6 +35,13 @@ function toggleTheme() {
   }
 }
 
+onMounted(() => {
+  // Silent auto check on startup
+  setTimeout(() => {
+    appStore.checkAppUpdate(true)
+  }, 2000) // Delay slightly to not block initial render
+})
+
 </script>
 
 <template>
@@ -54,7 +61,28 @@ function toggleTheme() {
 
 
     <!-- Right: Global Actions -->
-    <div class="flex items-center justify-end gap-2.5 w-1/4 min-w-[180px]">
+    <div class="flex items-center justify-end gap-2.5 flex-1">
+      <!-- Update Indicator -->
+      <div v-if="appStore.updateState === 'ready' || appStore.updateState === 'downloading'" class="flex items-center mr-1">
+        <Button 
+          v-if="appStore.updateState === 'ready'"
+          size="sm" 
+          variant="outline"
+          class="h-7 text-[10px] px-2.5 bg-accent/10 border-accent text-accent hover:bg-accent/20 rounded-full"
+          @click="appStore.installAppUpdate()"
+        >
+          <RefreshCw class="w-3 h-3 mr-1.5" />
+          {{ t('settings.restart_to_update') }}
+        </Button>
+        <div 
+          v-else-if="appStore.updateState === 'downloading'"
+          class="flex items-center h-7 text-[10px] px-2.5 text-muted-foreground rounded-full border border-border bg-secondary/30"
+        >
+          <Loader2 class="w-3 h-3 mr-1.5 animate-spin" />
+          {{ t('settings.downloading_update') }} {{ appStore.updateDownloadProgress }}%
+        </div>
+      </div>
+
       <!-- VS Code Style Sidebar Layout Controls -->
       <div class="flex items-center gap-0.5 mr-1">
         <button

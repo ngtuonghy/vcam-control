@@ -12,6 +12,7 @@ import { appDataDir, join } from '@tauri-apps/api/path'
 import { writeFile, mkdir } from '@tauri-apps/plugin-fs'
 import { v4 as uuidv4 } from 'uuid'
 import { convertFileSrc } from '@tauri-apps/api/core'
+import { deleteLocalImage } from '@/shared/lib/fs'
 import {
   Dialog,
   DialogContent,
@@ -207,8 +208,11 @@ async function handleGenerate() {
       appStore.generatorHistory = []
     }
     appStore.generatorHistory.unshift(newCodeItem)
-    if (appStore.generatorHistory.length > 20) {
-      appStore.generatorHistory.pop()
+    if (appStore.generatorHistory.length > 50) {
+      const removedItem = appStore.generatorHistory.pop()
+      if (removedItem && removedItem.path) {
+        deleteLocalImage(removedItem.path).catch(console.error)
+      }
     }
     appStore.saveData()
 

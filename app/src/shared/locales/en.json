@@ -52,7 +52,9 @@
       "toggleVcam": "Toggle Virtual Camera",
       "generateQr": "Generate Code Immediately",
       "addImage": "Add new Image/Video"
-    }
+    },
+    "downloading_update": "Downloading update...",
+    "restart_to_update": "Restart to install"
   },
   "sidebar": {
     "scenes": "SCENES",

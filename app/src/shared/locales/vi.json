@@ -52,7 +52,9 @@
       "toggleVcam": "Bật/Tắt Camera Ảo",
       "generateQr": "Tạo Mã Ngay Lập Tức",
       "addImage": "Thêm ảnh/video mới"
-    }
+    },
+    "downloading_update": "Đang tải bản cập nhật...",
+    "restart_to_update": "Khởi động lại để cài đặt"
   },
   "sidebar": {
     "scenes": "SCENES",

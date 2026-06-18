@@ -148,12 +148,12 @@ function saveShortcut() {
   <Dialog :open="isOpen" @update:open="isOpen = $event">
     <DialogTrigger asChild>
       <slot name="trigger">
-        <div class="h-8 flex items-center px-3 bg-secondary/30 border border-border/50 rounded-md">
-          <span v-if="!modelValue" class="text-muted-foreground truncate">{{ t('shortcut_recorder.unassigned') }}</span>
-          <div v-else class="flex items-center gap-1 overflow-hidden">
-            <Kbd v-for="key in modelValue.split('+')" :key="key">{{ formatKeyName(key) }}</Kbd>
+        <div class="h-8 w-full flex items-center px-2.5 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/60 hover:border-border/50 transition-all cursor-pointer text-muted-foreground group/trigger shadow-sm">
+          <span v-if="!modelValue" class="text-xs truncate flex-1 text-left">{{ t('shortcut_recorder.unassigned') }}</span>
+          <div v-else class="flex items-center gap-1.5 overflow-hidden flex-1">
+            <Kbd v-for="key in modelValue.split('+')" :key="key" class="font-sans text-[10px] uppercase font-bold h-5 px-1.5 rounded bg-background border border-border/60 shadow-sm text-foreground/80 inline-flex items-center justify-center tracking-wider">{{ formatKeyName(key) }}</Kbd>
           </div>
-          <Edit2 class="w-3.5 h-3.5 text-muted-foreground ml-1 opacity-50 flex-shrink-0" />
+          <Edit2 class="w-3.5 h-3.5 ml-2.5 opacity-0 group-hover/trigger:opacity-70 transition-opacity flex-shrink-0" />
         </div>
       </slot>
     </DialogTrigger>
