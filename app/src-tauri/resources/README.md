@@ -1,13 +1,12 @@
 # Standalone Virtual Camera Driver Directory
 
-Đặt tệp tin driver camera ảo của riêng bạn (`vcam.dll`) vào thư mục này:
-`src-tauri/resources/vcam.dll`
+This directory contains the `softcam.dll` DirectShow filter, which serves as the standalone virtual camera device for Windows.
 
-### Cách thức hoạt động:
-1. Khi ứng dụng khởi động hoặc khi người dùng kích hoạt, nhân Rust của ứng dụng Tauri sẽ đọc tệp `vcam.dll` từ thư mục tài nguyên này.
-2. Ứng dụng sẽ tự động chạy tiến trình hệ thống để đăng ký thiết bị DirectShow filter này vào Windows:
-   `regsvr32 /s vcam.dll`
-3. Sau khi đăng ký thành công, thiết bị Camera ảo độc lập của bạn sẽ hiển thị trong tất cả các ứng dụng giao tiếp (Zoom, Teams, Meet...) dưới tên thiết bị do driver của bạn định nghĩa!
+### Attribution
+The virtual camera driver used in this project is based on the open-source **softcam** project:
+[https://github.com/tshino/softcam](https://github.com/tshino/softcam)
 
-### Lưu ý:
-* Đảm bảo tệp DLL được biên dịch tương thích với kiến trúc 64-bit của Windows (x64) để tương thích hoàn toàn với ứng dụng và hệ điều hành.
+### How it works:
+1. When the app starts, the Tauri Rust backend reads the `softcam.dll` from this resources directory.
+2. The app uses an elevated PowerShell process to register the DirectShow filter with Windows via `regsvr32`.
+3. Once registered, the virtual camera device will appear in applications like OBS, Zoom, and Google Meet.

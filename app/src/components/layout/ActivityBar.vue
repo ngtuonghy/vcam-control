@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Camera, Settings, Code2, Database, LayoutTemplate } from 'lucide-vue-next'
-import { useAppStore } from '@/entities/app/model/store'
+import { useUiStore } from '@/stores/ui'
 
-const appStore = useAppStore()
+const uiStore = useUiStore()
 
 // Props for active tool state managed by parent
 const props = defineProps<{
@@ -64,7 +64,7 @@ const activeIndex = computed(() => {
     <!-- Bottom Settings -->
     <div class="mt-auto relative flex flex-col gap-1.5 p-1.5 bg-secondary/20 border border-border/20 rounded-2xl shadow-sm">
       <button
-        @click="appStore.isSettingsOpen = true"
+        @click="uiStore.isSettingsOpen = true"
         class="w-11 h-11 flex items-center justify-center rounded-xl text-muted-foreground hover:text-accent transition-all duration-200 group relative"
       >
         <!-- Sliding Highlight Hover Background (Only on hover, mimicking active state) -->
@@ -80,3 +80,4 @@ const activeIndex = computed(() => {
     </div>
   </aside>
 </template>
+

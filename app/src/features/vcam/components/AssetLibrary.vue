@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useAppStore } from '@/entities/app/model/store'
+import { useAssetStore } from '@/stores/assets'
+import { useUiStore } from '@/stores/ui'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FolderOpen } from 'lucide-vue-next'
 import { open, save } from '@tauri-apps/plugin-dialog'
-import { copyImageToLocal } from '@/shared/lib/fs'
+import { copyImageToLocal } from '@/utils/fs'
 import { ImagePlus, Download, QrCode } from 'lucide-vue-next'
 import AssetGrid from './AssetGrid.vue'
 import CodeGeneratorPanelWidget from './CodeGeneratorPanel.vue'
@@ -16,7 +17,8 @@ import { readDir, readFile, writeFile } from '@tauri-apps/plugin-fs'
 import { join } from '@tauri-apps/api/path'
 
 const { t } = useI18n()
-const appStore = useAppStore()
+const assetStore = useAssetStore()
+const uiStore = useUiStore()
 const searchQuery = ref('')
 
 onMounted(() => {
@@ -28,7 +30,7 @@ onUnmounted(() => {
 })
 
 async function handleAddImage() {
-  if (!appStore.activeGroupId) {
+  if (!assetStore.activeGroupId) {
     alert('Vui lòng chọn hoặc tạo Scene trước khi thêm ảnh.')
     return
   }
@@ -43,7 +45,7 @@ async function handleAddImage() {
       try {
         const localPath = await copyImageToLocal(path)
         const name = path.split('\\').pop()?.split('/').pop() || 'Untitled'
-        await appStore.addImage(appStore.activeGroupId, { name, path: localPath, shortcut: '' })
+        await assetStore.addImage(assetStore.activeGroupId, { name, path: localPath, shortcut: '' })
       } catch (e) {
         console.error(e)
       }
@@ -53,7 +55,7 @@ async function handleAddImage() {
       const pathStr = selected as string
       const localPath = await copyImageToLocal(pathStr)
       const name = pathStr.split('\\').pop()?.split('/').pop() || 'Untitled'
-      await appStore.addImage(appStore.activeGroupId, { name, path: localPath, shortcut: '' })
+      await assetStore.addImage(assetStore.activeGroupId, { name, path: localPath, shortcut: '' })
     } catch (e) {
       console.error(e)
     }
@@ -61,7 +63,7 @@ async function handleAddImage() {
 }
 
 async function handleAddFolder() {
-  if (!appStore.activeGroupId) {
+  if (!assetStore.activeGroupId) {
     alert('Vui lòng chọn hoặc tạo Scene trước khi thêm thư mục.')
     return
   }
@@ -83,7 +85,7 @@ async function handleAddFolder() {
             const fullPath = await join(selectedDir, entry.name!)
             try {
               const localPath = await copyImageToLocal(fullPath)
-              await appStore.addImage(appStore.activeGroupId, { name: entry.name || 'Untitled', path: localPath, shortcut: '' })
+              await assetStore.addImage(assetStore.activeGroupId, { name: entry.name || 'Untitled', path: localPath, shortcut: '' })
             } catch (e) {
               console.error(e)
             }
@@ -97,7 +99,7 @@ async function handleAddFolder() {
 }
 
 async function handleExportAll() {
-  const group = appStore.activeGroup
+  const group = assetStore.activeGroup
   if (!group || group.images.length === 0) {
     alert(t('assets.empty_export'))
     return
@@ -165,7 +167,7 @@ async function handleExportAll() {
 
 <template>
   <div class="h-full flex-shrink-0 flex flex-col bg-card">
-    <div v-show="!appStore.isGeneratorOpen" class="flex flex-col h-full overflow-hidden">
+    <div v-show="!uiStore.isGeneratorOpen" class="flex flex-col h-full overflow-hidden">
       <!-- Toolbar -->
       <div class="px-4 py-3 flex flex-col gap-3 border-b border-border/60 shrink-0">
         <!-- Title & Utility -->
@@ -183,7 +185,7 @@ async function handleExportAll() {
           <Button size="sm" variant="outline" class="flex-1 h-7 px-1 text-[10px] bg-secondary/30 border-border hover:border-accent/50 hover:bg-accent/10 hover:text-accent transition-colors" @click="handleAddFolder" :title="t('assets.add_folder')">
             <FolderOpen class="w-3.5 h-3.5 shrink-0" /> <span class="hidden xl:inline truncate ml-1.5">{{ t('assets.add_folder') }}</span>
           </Button>
-          <Button size="sm" variant="outline" class="flex-1 h-7 px-1 text-[10px] bg-secondary/30 border-border hover:border-accent/50 hover:bg-accent/10 hover:text-accent transition-colors" @click="appStore.isGeneratorOpen = true; appStore.generatorMode = 'asset'" title="Tạo QR">
+          <Button size="sm" variant="outline" class="flex-1 h-7 px-1 text-[10px] bg-secondary/30 border-border hover:border-accent/50 hover:bg-accent/10 hover:text-accent transition-colors" @click="uiStore.isGeneratorOpen = true; uiStore.generatorMode = 'asset'" title="Tạo QR">
             <QrCode class="w-3.5 h-3.5 shrink-0" /> <span class="hidden xl:inline truncate ml-1.5">Tạo QR</span>
           </Button>
         </div>
@@ -201,11 +203,12 @@ async function handleExportAll() {
 
       <!-- Footer -->
       <div class="p-2 border-t border-border/50 text-[10px] text-muted-foreground flex justify-between items-center bg-card shrink-0">
-        <span class="opacity-60">{{ appStore.activeGroup?.images.length || 0 }} {{ t('main.assets').toLowerCase() }}</span>
+        <span class="opacity-60">{{ assetStore.activeGroup?.images.length || 0 }} {{ t('main.assets').toLowerCase() }}</span>
       </div>
     </div>
 
     <!-- Generator Panel -->
-    <CodeGeneratorPanelWidget v-show="appStore.isGeneratorOpen" v-model:open="appStore.isGeneratorOpen" />
+    <CodeGeneratorPanelWidget v-show="uiStore.isGeneratorOpen" v-model:open="uiStore.isGeneratorOpen" />
   </div>
 </template>
+

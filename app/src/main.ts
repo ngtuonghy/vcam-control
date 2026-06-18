@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import './app/styles/index.css'
-import { i18n } from './shared/lib/i18n'
+import './styles/globals.css'
+import { i18n } from './utils/i18n'
 import App from './app/App.vue'
 
 const pinia = createPinia()

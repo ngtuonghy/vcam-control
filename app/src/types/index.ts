@@ -15,6 +15,7 @@ export interface GroupItem {
 }
 
 export interface AppSettings {
+  isDriverRegistered?: boolean;
   language?: 'vi' | 'en';
   renderResolution?: '720p' | '1080p' | '1440p';
   filterType?: 'Nearest' | 'Triangle' | 'Lanczos3';
@@ -43,3 +44,4 @@ export interface AppData {
   isGeneratorOpen?: boolean;
   generatorMode?: 'quick' | 'asset';
 }
+

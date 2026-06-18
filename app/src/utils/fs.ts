@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 import { remove } from '@tauri-apps/plugin-fs';
 
 export async function copyImageToLocal(sourcePath: string): Promise<string> {
@@ -18,3 +18,13 @@ export async function deleteLocalImage(path: string): Promise<void> {
     console.warn("Failed to delete local image:", error);
   }
 }
+
+export function getAssetUrl(path: string) {
+  let url = convertFileSrc(path);
+  url = url.replace(/^asset:\/\/[^\/]+\//, 'http://asset.localhost/');
+  return url;
+}
+
+
+
+

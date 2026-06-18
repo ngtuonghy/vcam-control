@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useAppStore } from '@/entities/app/model/store'
-import { convertFileSrc } from '@tauri-apps/api/core'
+import { useAssetStore } from '@/stores/assets'
+import { useUiStore } from '@/stores/ui'
+import { getAssetUrl } from '@/utils/fs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
@@ -10,7 +11,8 @@ import { useI18n } from 'vue-i18n'
 import { useSortable } from '@vueuse/integrations/useSortable'
 
 const { t } = useI18n()
-const appStore = useAppStore()
+const assetStore = useAssetStore()
+const uiStore = useUiStore()
 
 const isAddGroupOpen = ref(false)
 const newGroupName = ref('')
@@ -20,7 +22,7 @@ const editingGroupName = ref('')
 
 async function handleAddGroup() {
   if (newGroupName.value.trim()) {
-    await appStore.addGroup(newGroupName.value.trim())
+    await assetStore.addGroup(newGroupName.value.trim())
     newGroupName.value = ''
     isAddGroupOpen.value = false
   }
@@ -34,7 +36,7 @@ function startEditing(id: string, name: string, e: Event) {
 
 async function saveEdit() {
   if (editingGroupName.value.trim() && editingGroupId.value) {
-    await appStore.renameGroup(editingGroupId.value, editingGroupName.value.trim())
+    await assetStore.renameGroup(editingGroupId.value, editingGroupName.value.trim())
   }
   editingGroupId.value = ''
 }
@@ -42,18 +44,18 @@ async function saveEdit() {
 async function handleDelete(id: string, e: Event) {
   e.stopPropagation()
   if (confirm(t('sidebar.confirm_delete'))) {
-    await appStore.deleteGroup(id)
+    await assetStore.deleteGroup(id)
   }
 }
 
 function handleSelectScene(id: string) {
-  appStore.setActiveGroup(id)
-  appStore.isGeneratorOpen = false
-  appStore.clearLiveCodeOverride()
+  assetStore.setActiveGroup(id)
+  uiStore.isGeneratorOpen = false
+  assetStore.clearLiveCodeOverride()
 }
 
 const groupListRef = ref<HTMLElement | null>(null)
-const displayGroups = computed(() => appStore.groups)
+const displayGroups = computed(() => assetStore.groups)
 
 const sortableOptions = {
   animation: 200,
@@ -68,7 +70,7 @@ const sortableOptions = {
   onUpdate: (e: any) => {
     const { oldIndex, newIndex } = e
     if (oldIndex === undefined || newIndex === undefined) return
-    appStore.saveData()
+    assetStore.saveData()
   }
 }
 
@@ -110,20 +112,20 @@ useSortable(groupListRef, displayGroups, sortableOptions as any)
           :key="group.id"
           @click="handleSelectScene(group.id)"
           class="group relative flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all border select-none w-full"
-          :class="(appStore.activeGroupId === group.id && !appStore.isGeneratorOpen)
+          :class="(assetStore.activeGroupId === group.id && !uiStore.isGeneratorOpen)
             ? 'bg-accent/5 border-accent/30 text-accent font-medium shadow-sm' 
             : 'border-border/60 text-muted-foreground hover:bg-secondary/40 hover:text-foreground bg-secondary/10'"
         >
           <!-- Active indicator bar -->
           <div 
-            v-if="appStore.activeGroupId === group.id && !appStore.isGeneratorOpen" 
+            v-if="assetStore.activeGroupId === group.id && !uiStore.isGeneratorOpen" 
             class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r bg-accent"
           ></div>
           
           <!-- Thumbnail (on left) -->
           <div class="w-16 h-10 rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center border border-border/40 bg-surface relative">
             <span v-if="!group.images.length" class="text-[8px] text-muted-foreground/60 italic">—</span>
-            <img v-else :src="convertFileSrc(group.images[0].path)" class="w-full h-full object-cover" draggable="false" />
+            <img v-else :src="getAssetUrl(group.images[0].path)" class="w-full h-full object-cover" draggable="false" />
           </div>
           
           <!-- Name & Assets Count (on right) -->
@@ -169,13 +171,13 @@ useSortable(groupListRef, displayGroups, sortableOptions as any)
       <Button 
         variant="ghost"
         class="w-full relative overflow-hidden transition-all duration-300 font-semibold flex items-center justify-center gap-1.5 h-8 border text-xs rounded-md" 
-        :class="(appStore.isGeneratorOpen && appStore.generatorMode === 'quick')
+        :class="(uiStore.isGeneratorOpen && uiStore.generatorMode === 'quick')
           ? 'bg-accent/10 hover:bg-accent/20 border-accent/40 text-accent shadow-sm'
           : 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500/50 shadow-md shadow-indigo-600/20 hover:text-white'"
-        @click="appStore.isGeneratorOpen = true; appStore.generatorMode = 'quick'"
+        @click="uiStore.isGeneratorOpen = true; uiStore.generatorMode = 'quick'"
       >
         <div 
-          v-if="appStore.isGeneratorOpen && appStore.generatorMode === 'quick'" 
+          v-if="uiStore.isGeneratorOpen && uiStore.generatorMode === 'quick'" 
           class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r bg-accent"
         ></div>
         <QrCode class="w-3.5 h-3.5 shrink-0" />
@@ -205,3 +207,5 @@ useSortable(groupListRef, displayGroups, sortableOptions as any)
   scrollbar-color: hsl(var(--border) / 0.6) transparent;
 }
 </style>
+
+

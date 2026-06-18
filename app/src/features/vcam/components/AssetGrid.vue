@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
-import { useAppStore } from '@/entities/app/model/store'
-import { convertFileSrc } from '@tauri-apps/api/core'
+import { useAssetStore } from '@/stores/assets'
+import { getAssetUrl } from '@/utils/fs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Trash2, Check, Edit2, Eye, X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import { deleteLocalImage } from '@/shared/lib/fs'
+import { deleteLocalImage } from '@/utils/fs'
 
 const props = defineProps<{
   searchQuery: string
 }>()
 
-const appStore = useAppStore()
+const assetStore = useAssetStore()
 
 const filteredImages = computed(() => {
-  const group = appStore.activeGroup
+  const group = assetStore.activeGroup
   if (!group) return []
   if (!props.searchQuery.trim()) return group.images
   const query = props.searchQuery.toLowerCase().trim()
@@ -24,17 +24,17 @@ const filteredImages = computed(() => {
 
 async function deleteImage(imgId: string) {
   if (confirm("Bạn có chắc muốn xóa ảnh này khỏi danh sách?")) {
-    const group = appStore.activeGroup
+    const group = assetStore.activeGroup
     if (!group) return
     const imgToDelete = group.images.find(i => i.id === imgId)
     if (imgToDelete) {
       await deleteLocalImage(imgToDelete.path)
     }
     group.images = group.images.filter(i => i.id !== imgId)
-    if (appStore.currentImageIndex >= group.images.length) {
-      appStore.currentImageIndex = -1
+    if (assetStore.currentImageIndex >= group.images.length) {
+      assetStore.currentImageIndex = -1
     }
-    await appStore.saveData()
+    await assetStore.saveData()
   }
 }
 
@@ -48,12 +48,12 @@ function openRenameDialog(imgId: string, currentName: string) {
 
 async function saveRenameImage() {
   if (renamingImageName.value.trim() && renamingImageId.value) {
-    const group = appStore.activeGroup
+    const group = assetStore.activeGroup
     if (group) {
       const img = group.images.find(i => i.id === renamingImageId.value)
       if (img) {
         img.name = renamingImageName.value.trim()
-        await appStore.saveData()
+        await assetStore.saveData()
       }
     }
   }
@@ -64,7 +64,7 @@ async function saveRenameImage() {
 const gridRef = ref<HTMLElement | null>(null)
 
 const displayImages = computed(() => {
-  const group = appStore.activeGroup
+  const group = assetStore.activeGroup
   if (!group) return []
   return props.searchQuery.trim() ? filteredImages.value : group.images
 })
@@ -87,15 +87,15 @@ const sortableOptions = {
     if (oldIndex === undefined || newIndex === undefined) return
     
     // Update current image index
-    if (appStore.currentImageIndex === oldIndex) {
-      appStore.currentImageIndex = newIndex
-    } else if (appStore.currentImageIndex > oldIndex && appStore.currentImageIndex <= newIndex) {
-      appStore.currentImageIndex--
-    } else if (appStore.currentImageIndex < oldIndex && appStore.currentImageIndex >= newIndex) {
-      appStore.currentImageIndex++
+    if (assetStore.currentImageIndex === oldIndex) {
+      assetStore.currentImageIndex = newIndex
+    } else if (assetStore.currentImageIndex > oldIndex && assetStore.currentImageIndex <= newIndex) {
+      assetStore.currentImageIndex--
+    } else if (assetStore.currentImageIndex < oldIndex && assetStore.currentImageIndex >= newIndex) {
+      assetStore.currentImageIndex++
     }
     
-    appStore.saveData()
+    assetStore.saveData()
   }
 }
 
@@ -115,7 +115,7 @@ const previewImageIndex = ref<number | null>(null)
 const previewImageUrl = computed(() => {
   if (previewImageIndex.value === null) return null
   const img = filteredImages.value[previewImageIndex.value]
-  return img ? convertFileSrc(img.path) : null
+  return img ? getAssetUrl(img.path) : null
 })
 
 const zoomLevel = ref(1)
@@ -191,7 +191,7 @@ function resetPreview() {
 
 <template>
   <div class="flex-1 overflow-y-auto overflow-x-hidden p-3 hide-scrollbar">
-    <div v-show="appStore.activeGroup" class="content-start">
+    <div v-show="assetStore.activeGroup" class="content-start">
       <div 
         ref="gridRef"
         class="grid grid-cols-2 gap-2"
@@ -199,23 +199,23 @@ function resetPreview() {
         <div 
           v-for="(img, idx) in displayImages" 
           :key="img.id"
-          @click="appStore.triggerImage(img.path, idx)"
+          @click="assetStore.triggerImage(img.path, idx)"
           class="group relative flex flex-col gap-1.5 select-none cursor-pointer"
         >
           <!-- Image Box -->
           <div 
             class="relative w-full aspect-video rounded-md overflow-hidden border-2 transition-smooth bg-thumbnail-bg"
             :class="[
-              appStore.currentImageIndex === idx 
+              assetStore.currentImageIndex === idx 
                 ? 'border-accent glow-accent-sm' 
                 : 'border-border/40 hover:border-border'
             ]"
           >
             <!-- Thumbnail -->
-            <img :src="convertFileSrc(img.path)" draggable="false" class="w-full h-full object-contain" />
+            <img :src="getAssetUrl(img.path)" draggable="false" class="w-full h-full object-contain" />
             
             <!-- Active checkmark -->
-            <div v-if="appStore.currentImageIndex === idx" class="absolute top-1.5 right-1.5 w-5 h-5 bg-accent rounded-full flex items-center justify-center shadow-md">
+            <div v-if="assetStore.currentImageIndex === idx" class="absolute top-1.5 right-1.5 w-5 h-5 bg-accent rounded-full flex items-center justify-center shadow-md">
               <Check class="w-3 h-3 text-white" />
             </div>
           </div>
@@ -252,7 +252,7 @@ function resetPreview() {
         </div>
       </div>
     </div>
-    <div v-if="!appStore.activeGroup" class="h-full flex items-center justify-center text-xs text-muted-foreground italic">
+    <div v-if="!assetStore.activeGroup" class="h-full flex items-center justify-center text-xs text-muted-foreground italic">
       Chưa có Scene nào được chọn
     </div>
 
@@ -323,7 +323,7 @@ function resetPreview() {
             class="h-16 aspect-video shrink-0 rounded border-2 cursor-pointer transition-all overflow-hidden bg-black/50"
             :class="previewImageIndex === idx ? 'border-accent shadow-md scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'"
           >
-            <img :src="convertFileSrc(img.path)" draggable="false" class="w-full h-full object-contain" :title="img.name" />
+            <img :src="getAssetUrl(img.path)" draggable="false" class="w-full h-full object-contain" :title="img.name" />
           </div>
         </div>
 
@@ -351,3 +351,5 @@ function resetPreview() {
   @apply opacity-80 shadow-lg;
 }
 </style>
+
+

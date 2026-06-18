@@ -1,26 +1,28 @@
 <script setup lang="ts">
-import { useAppStore } from '@/entities/app/model/store'
+import { useSettingsStore } from '@/stores/settings'
+import { useUiStore } from '@/stores/ui'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { ShortcutDialog } from '@/components/ui/shortcut-recorder'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { check } from '@tauri-apps/plugin-updater'
+
 import { RefreshCw, Settings2, Loader2 } from 'lucide-vue-next'
 
 const { t } = useI18n()
 
-const appStore = useAppStore()
+const settingsStore = useSettingsStore()
+const uiStore = useUiStore()
 
 async function checkForUpdate() {
-  if (appStore.updateState === 'ready') {
-    await appStore.installAppUpdate()
+  if (uiStore.updateState === 'ready') {
+    await uiStore.installAppUpdate()
     return
   }
   
-  if (appStore.updateState === 'idle') {
-    const update = await appStore.checkAppUpdate(false)
+  if (uiStore.updateState === 'idle') {
+    const update = await uiStore.checkAppUpdate(false)
     if (!update) {
       alert(t('settings.update_not_available'))
     }
@@ -28,8 +30,8 @@ async function checkForUpdate() {
 }
 
 const isOpen = computed({
-  get: () => appStore.isSettingsOpen,
-  set: (val: boolean) => { appStore.isSettingsOpen = val }
+  get: () => uiStore.isSettingsOpen,
+  set: (val: boolean) => { uiStore.isSettingsOpen = val }
 })
 
 const shortcuts = computed(() => [
@@ -74,7 +76,7 @@ function getAssignedShortcuts(currentKey: string) {
   const map: Record<string, string> = {}
   for (const sc of shortcuts.value) {
     if (sc.key === currentKey) continue
-    const val = (appStore.settings as any)[sc.key]
+    const val = (settingsStore.settings as any)[sc.key]
     if (val) {
       map[val] = sc.label
     }
@@ -83,20 +85,20 @@ function getAssignedShortcuts(currentKey: string) {
 }
 
 function resetShortcuts() {
-  appStore.settings.moveUpShortcut = 'Alt+Shift+ArrowUp'
-  appStore.settings.moveDownShortcut = 'Alt+Shift+ArrowDown'
-  appStore.settings.moveLeftShortcut = 'Alt+Shift+ArrowLeft'
-  appStore.settings.moveRightShortcut = 'Alt+Shift+ArrowRight'
-  appStore.settings.zoomInShortcut = 'Alt+Shift+='
-  appStore.settings.zoomOutShortcut = 'Alt+Shift+-'
-  appStore.settings.nextImageShortcut = 'Alt+Shift+.'
-  appStore.settings.prevImageShortcut = 'Alt+Shift+,'
-  appStore.settings.nextSceneShortcut = 'Alt+Shift+]'
-  appStore.settings.prevSceneShortcut = 'Alt+Shift+['
-  appStore.settings.toggleVcamShortcut = 'Alt+Shift+V'
-  appStore.settings.generateQrShortcut = 'Alt+Shift+Q'
-  appStore.settings.addImageShortcut = 'Alt+Shift+I'
-  appStore.saveSettings()
+  settingsStore.settings.moveUpShortcut = 'Alt+Shift+ArrowUp'
+  settingsStore.settings.moveDownShortcut = 'Alt+Shift+ArrowDown'
+  settingsStore.settings.moveLeftShortcut = 'Alt+Shift+ArrowLeft'
+  settingsStore.settings.moveRightShortcut = 'Alt+Shift+ArrowRight'
+  settingsStore.settings.zoomInShortcut = 'Alt+Shift+='
+  settingsStore.settings.zoomOutShortcut = 'Alt+Shift+-'
+  settingsStore.settings.nextImageShortcut = 'Alt+Shift+.'
+  settingsStore.settings.prevImageShortcut = 'Alt+Shift+,'
+  settingsStore.settings.nextSceneShortcut = 'Alt+Shift+]'
+  settingsStore.settings.prevSceneShortcut = 'Alt+Shift+['
+  settingsStore.settings.toggleVcamShortcut = 'Alt+Shift+V'
+  settingsStore.settings.generateQrShortcut = 'Alt+Shift+Q'
+  settingsStore.settings.addImageShortcut = 'Alt+Shift+I'
+  settingsStore.saveSettings()
 }
 </script>
 
@@ -121,9 +123,9 @@ function resetShortcuts() {
                 <button 
                   v-for="lang in languages" 
                   :key="lang.value"
-                  @click="appStore.updateSettings({ language: lang.value as any })"
+                  @click="settingsStore.updateSettings({ language: lang.value as any })"
                   class="px-3.5 py-1.5 text-xs rounded-md transition-all font-medium duration-200"
-                  :class="appStore.settings.language === lang.value ? 'bg-accent text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+                  :class="settingsStore.settings.language === lang.value ? 'bg-accent text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'"
                 >
                   {{ lang.label }}
                 </button>
@@ -136,17 +138,17 @@ function resetShortcuts() {
                 size="sm" 
                 variant="outline" 
                 class="h-8 text-xs bg-background border-border hover:border-accent/40 hover:bg-accent/5 hover:text-accent transition-colors px-4 rounded-lg shadow-sm"
-                :class="appStore.updateState === 'ready' ? 'bg-accent/10 border-accent text-accent hover:bg-accent/20' : ''"
+                :class="uiStore.updateState === 'ready' ? 'bg-accent/10 border-accent text-accent hover:bg-accent/20' : ''"
                 @click="checkForUpdate"
-                :disabled="appStore.updateState === 'checking' || appStore.updateState === 'downloading'"
+                :disabled="uiStore.updateState === 'checking' || uiStore.updateState === 'downloading'"
               >
-                <Loader2 v-if="appStore.updateState === 'checking' || appStore.updateState === 'downloading'" class="w-3.5 h-3.5 mr-2 animate-spin" />
+                <Loader2 v-if="uiStore.updateState === 'checking' || uiStore.updateState === 'downloading'" class="w-3.5 h-3.5 mr-2 animate-spin" />
                 <RefreshCw v-else class="w-3.5 h-3.5 mr-2" />
                 
-                <span v-if="appStore.updateState === 'idle'">{{ t('settings.check_update') }}</span>
-                <span v-else-if="appStore.updateState === 'checking'">{{ t('settings.checking_update') }}</span>
-                <span v-else-if="appStore.updateState === 'downloading'">{{ t('settings.downloading_update') }} ({{ appStore.updateDownloadProgress }}%)</span>
-                <span v-else-if="appStore.updateState === 'ready'">{{ t('settings.restart_to_update') }}</span>
+                <span v-if="uiStore.updateState === 'idle'">{{ t('settings.check_update') }}</span>
+                <span v-else-if="uiStore.updateState === 'checking'">{{ t('settings.checking_update') }}</span>
+                <span v-else-if="uiStore.updateState === 'downloading'">{{ t('settings.downloading_update') }} ({{ uiStore.updateDownloadProgress }}%)</span>
+                <span v-else-if="uiStore.updateState === 'ready'">{{ t('settings.restart_to_update') }}</span>
               </Button>
             </div>
           </div>
@@ -161,9 +163,9 @@ function resetShortcuts() {
                 <button 
                   v-for="res in resolutions" 
                   :key="res.value"
-                  @click="appStore.settings.renderResolution = res.value as any; appStore.saveSettings()"
+                  @click="settingsStore.settings.renderResolution = res.value as any; settingsStore.saveSettings()"
                   class="px-3 py-1.5 text-xs rounded-md transition-all font-medium duration-200"
-                  :class="appStore.settings.renderResolution === res.value ? 'bg-accent text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+                  :class="settingsStore.settings.renderResolution === res.value ? 'bg-accent text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'"
                 >
                   {{ res.label }}
                 </button>
@@ -176,9 +178,9 @@ function resetShortcuts() {
                 <button 
                   v-for="f in filters" 
                   :key="f.value"
-                  @click="appStore.settings.filterType = f.value as any; appStore.saveSettings()"
+                  @click="settingsStore.settings.filterType = f.value as any; settingsStore.saveSettings()"
                   class="px-3 py-1.5 text-xs rounded-md transition-all font-medium duration-200"
-                  :class="appStore.settings.filterType === f.value ? 'bg-accent text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+                  :class="settingsStore.settings.filterType === f.value ? 'bg-accent text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'"
                 >
                   {{ f.label }}
                 </button>
@@ -191,9 +193,9 @@ function resetShortcuts() {
                 <button 
                   v-for="fps in fpsOptions" 
                   :key="fps.value"
-                  @click="appStore.settings.fps = fps.value as any; appStore.saveSettings()"
+                  @click="settingsStore.settings.fps = fps.value as any; settingsStore.saveSettings()"
                   class="px-4 py-1.5 text-xs rounded-md transition-all font-medium duration-200"
-                  :class="appStore.settings.fps === fps.value ? 'bg-accent text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+                  :class="settingsStore.settings.fps === fps.value ? 'bg-accent text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'"
                 >
                   {{ fps.label }}
                 </button>
@@ -219,10 +221,10 @@ function resetShortcuts() {
                 <Label class="text-sm font-medium text-foreground/80 cursor-pointer">{{ sc.label }}</Label>
                 <div class="w-[180px] flex-shrink-0">
                   <ShortcutDialog 
-                    v-model="(appStore.settings as any)[sc.key]" 
+                    v-model="(settingsStore.settings as any)[sc.key]" 
                     :title="sc.title" 
                     :assigned-shortcuts="getAssignedShortcuts(sc.key)"
-                    @save="appStore.saveSettings()" 
+                    @save="settingsStore.saveSettings()" 
                   />
                 </div>
               </div>
@@ -234,3 +236,7 @@ function resetShortcuts() {
     </DialogContent>
   </Dialog>
 </template>
+
+
+
+

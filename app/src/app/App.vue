@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useAppStore } from '@/entities/app/model/store'
+import { useAssetStore } from '@/stores/assets'
 import MainPage from '@/pages/main/MainPage.vue'
 
-const appStore = useAppStore()
+const assetStore = useAssetStore()
 
 // Initialize theme immediately to avoid styling flash and ensure correct initial state for components
 const savedTheme = localStorage.getItem('theme')
@@ -22,7 +22,7 @@ if (savedTheme === 'light') {
 }
 
 onMounted(async () => {
-  await appStore.loadData()
+  await assetStore.loadData()
 })
 </script>
 

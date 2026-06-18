@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useAppStore } from '@/entities/app/model/store'
+import { useUiStore } from '@/stores/ui'
 import { Button } from '@/components/ui/button'
 import { Moon, Sun, Settings, PanelLeft, PanelRight, RefreshCw, Loader2 } from 'lucide-vue-next'
 
-const appStore = useAppStore()
-import pkg from '../../package.json'
+const uiStore = useUiStore()
+import pkg from '../../../package.json'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -38,7 +38,7 @@ function toggleTheme() {
 onMounted(() => {
   // Silent auto check on startup
   setTimeout(() => {
-    appStore.checkAppUpdate(true)
+    uiStore.checkAppUpdate(true)
   }, 2000) // Delay slightly to not block initial render
 })
 
@@ -63,23 +63,23 @@ onMounted(() => {
     <!-- Right: Global Actions -->
     <div class="flex items-center justify-end gap-2.5 flex-1">
       <!-- Update Indicator -->
-      <div v-if="appStore.updateState === 'ready' || appStore.updateState === 'downloading'" class="flex items-center mr-1">
+      <div v-if="uiStore.updateState === 'ready' || uiStore.updateState === 'downloading'" class="flex items-center mr-1">
         <Button 
-          v-if="appStore.updateState === 'ready'"
+          v-if="uiStore.updateState === 'ready'"
           size="sm" 
           variant="outline"
           class="h-7 text-[10px] px-2.5 bg-accent/10 border-accent text-accent hover:bg-accent/20 rounded-full"
-          @click="appStore.installAppUpdate()"
+          @click="uiStore.installAppUpdate()"
         >
           <RefreshCw class="w-3 h-3 mr-1.5" />
           {{ t('settings.restart_to_update') }}
         </Button>
         <div 
-          v-else-if="appStore.updateState === 'downloading'"
+          v-else-if="uiStore.updateState === 'downloading'"
           class="flex items-center h-7 text-[10px] px-2.5 text-muted-foreground rounded-full border border-border bg-secondary/30"
         >
           <Loader2 class="w-3 h-3 mr-1.5 animate-spin" />
-          {{ t('settings.downloading_update') }} {{ appStore.updateDownloadProgress }}%
+          {{ t('settings.downloading_update') }} {{ uiStore.updateDownloadProgress }}%
         </div>
       </div>
 
@@ -112,9 +112,10 @@ onMounted(() => {
         <Moon v-else class="w-4 h-4" />
       </Button>
       <!-- App Settings Gear -->
-      <Button variant="ghost" size="icon" class="h-8 w-8 rounded-full border border-border" @click="appStore.isSettingsOpen = true" :title="t('header.settings_tooltip')">
+      <Button variant="ghost" size="icon" class="h-8 w-8 rounded-full border border-border" @click="uiStore.isSettingsOpen = true" :title="t('header.settings_tooltip')">
         <Settings class="w-4 h-4" />
       </Button>
     </div>
   </header>
 </template>
+

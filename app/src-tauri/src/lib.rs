@@ -63,6 +63,7 @@ pub fn run() {
             greet, 
             copy_image_to_local, 
             vcam::register_standalone_vcam,
+            vcam::register_vcam_admin,
             vcam::send_frame_to_vcam,
             vcam::update_vcam_scene,
             vcam::update_quality_settings
@@ -70,3 +71,4 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+

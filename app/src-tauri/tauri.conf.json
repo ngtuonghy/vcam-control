@@ -21,7 +21,7 @@
       "assetProtocol": {
         "enable": true,
         "scope": [
-          "**"
+          "**", "$APPDATA/**", "$APP_DATA/**", "$APP_CONFIG/**", "$APP_LOCAL_DATA/**"
         ]
       },
       "csp": null

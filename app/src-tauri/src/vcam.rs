@@ -124,15 +124,19 @@ pub fn render_current_scene(target_canvas_w: u32, target_canvas_h: u32, filter: 
         };
         
         if need_load {
-            if let Ok(img) = image::open(path) {
-                let rgba = img.to_rgba8();
-                cached_img = Some(rgba.clone());
-                if let Ok(mut state) = VCAM_STATE.lock() {
-                    state.cached_images.insert(path.clone(), rgba);
-                    state.cached_keys.push_back(path.clone());
-                    if state.cached_keys.len() > 10 {
-                        if let Some(oldest) = state.cached_keys.pop_front() {
-                            state.cached_images.remove(&oldest);
+            if let Ok(reader) = image::ImageReader::open(path) {
+                if let Ok(reader) = reader.with_guessed_format() {
+                    if let Ok(img) = reader.decode() {
+                        let rgba = img.to_rgba8();
+                        cached_img = Some(rgba.clone());
+                        if let Ok(mut state) = VCAM_STATE.lock() {
+                            state.cached_images.insert(path.clone(), rgba);
+                            state.cached_keys.push_back(path.clone());
+                            if state.cached_keys.len() > 10 {
+                                if let Some(oldest) = state.cached_keys.pop_front() {
+                                    state.cached_images.remove(&oldest);
+                                }
+                            }
                         }
                     }
                 }
@@ -455,4 +459,45 @@ pub async fn register_standalone_vcam(app: tauri::AppHandle) -> Result<String, S
 pub async fn send_frame_to_vcam(_rgba_bytes: Vec<u8>, _width: i32, _height: i32) -> Result<(), String> {
     Ok(())
 }
+
+
+#[tauri::command]
+pub async fn register_vcam_admin(app: tauri::AppHandle) -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    {
+        use std::process::Command;
+        use std::os::windows::process::CommandExt;
+
+        let resource_path = app
+            .path()
+            .resolve("resources/softcam.dll", tauri::path::BaseDirectory::Resource)
+            .map_err(|e| format!("Failed to resolve softcam.dll path: {}", e))?;
+
+        if !resource_path.exists() {
+            return Err("softcam.dll not found.".to_string());
+        }
+
+        let output = Command::new("powershell")
+            .args(&[
+                "-Command",
+                &format!("Start-Process regsvr32 -ArgumentList '/s', '\\\"{}\\\"' -Verb RunAs -Wait", resource_path.to_str().unwrap_or(""))
+            ])
+            .creation_flags(0x08000000)
+            .output()
+            .map_err(|e| format!("PowerShell error: {}", e))?;
+
+        if output.status.success() {
+            Ok("Success".to_string())
+        } else {
+            let err_msg = String::from_utf8_lossy(&output.stderr);
+            Err(format!("Failed to elevate. {}", err_msg))
+        }
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        Err("Not supported".to_string())
+    }
+}
+
 
