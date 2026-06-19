@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.2.3...vcam-control-v0.2.4) (2026-06-19)
+
+
+### Bug Fixes
+
+* update pnpm-lock.yaml dependencies ([388e593](https://github.com/ngtuonghy/vcam-control/commit/388e593a75c65d1d67a24c3a64a61b51a33c11db))
+
 ## [0.2.3](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.2.2...vcam-control-v0.2.3) (2026-06-19)
 
 
