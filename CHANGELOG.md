@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.6](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.2.5...vcam-control-v0.2.6) (2026-06-19)
+
+
+### Bug Fixes
+
+* **updater:** use shallowRef to fix TypeError on update installation ([0bb16d0](https://github.com/ngtuonghy/vcam-control/commit/0bb16d031b3adac725f5a41fc90edfc1153642f1))
+
 ## [0.2.5](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.2.4...vcam-control-v0.2.5) (2026-06-19)
 
 
