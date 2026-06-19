@@ -4,5 +4,5 @@
   "scripts": {
     "dev": "pnpm -F app tauri dev"
   },
-  "version": "0.2.1"
+  "version": "0.2.2"
 }
