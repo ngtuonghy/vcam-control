@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.3](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.2.2...vcam-control-v0.2.3) (2026-06-19)
+
+
+### Bug Fixes
+
+* **updater:** resolve restart failure after update installation ([c948592](https://github.com/ngtuonghy/vcam-control/commit/c948592f1d4f537c911636535a5c0172d243ed88))
+* **website:** fallback to previous release if latest has no assets ([a41787e](https://github.com/ngtuonghy/vcam-control/commit/a41787e1d71f335d4176e6b2459dbdc84f2c35c4))
+
 ## [0.2.2](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.2.1...vcam-control-v0.2.2) (2026-06-19)
 
 
