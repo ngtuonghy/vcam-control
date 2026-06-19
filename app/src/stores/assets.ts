@@ -193,8 +193,8 @@ export const useAssetStore = defineStore('assets', () => {
           cropLeft: 0,
           cropRight: 0,
           cropTop: 0,
-          positionX: 460,
-          positionY: 240,
+          positionX: 0,
+          positionY: 0,
           rotation: 0,
           scaleX: 1,
           scaleY: 1
@@ -233,8 +233,8 @@ export const useAssetStore = defineStore('assets', () => {
           cropLeft: 0,
           cropRight: 0,
           cropTop: 0,
-          positionX: 460,
-          positionY: 240,
+          positionX: 0,
+          positionY: 0,
           rotation: 0,
           scaleX: 1,
           scaleY: 1
