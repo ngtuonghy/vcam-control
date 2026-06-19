@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import { relaunch } from '@tauri-apps/plugin-process';
 
 export async function registerStandaloneVcam() {
   try {
@@ -72,6 +73,7 @@ export async function checkAndUpdateApp(
 export async function installAppUpdate(updateState: { value: string }, readyUpdate: { value: any }) {
   if (updateState.value === 'ready' && readyUpdate.value) {
     await readyUpdate.value.install();
+    await relaunch();
   }
 }
 

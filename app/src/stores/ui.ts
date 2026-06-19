@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
+import { relaunch } from '@tauri-apps/plugin-process';
 
 export const useUiStore = defineStore('ui', () => {
   // Generator panel state
@@ -81,6 +82,7 @@ export const useUiStore = defineStore('ui', () => {
   async function installAppUpdate() {
     if (updateState.value === 'ready' && readyUpdate.value) {
       await readyUpdate.value.install();
+      await relaunch();
     }
   }
 
