@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.2.0...vcam-control-v0.2.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* **app:** remove unused imports in Sidebar to fix build error ([8df11c6](https://github.com/ngtuonghy/vcam-control/commit/8df11c6844eddc17d3fb85a545b8766947304c7f))
+* update vcam core components and generator logic ([fbb47cf](https://github.com/ngtuonghy/vcam-control/commit/fbb47cfcbc58d923cf87d25617c93af216a96aaf))
+
 ## [0.2.0](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.1.0...vcam-control-v0.2.0) (2026-06-18)
 
 
