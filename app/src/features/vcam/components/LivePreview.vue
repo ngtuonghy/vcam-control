@@ -58,7 +58,7 @@ const { onMouseDown, boundingBoxStyle } = useBoundingBox(
     <div class="flex-1 w-full min-h-0 flex items-center justify-center p-4">
       <div 
         class="relative bg-black overflow-hidden select-none ring-1 ring-border/20 shadow-2xl rounded"
-        style="aspect-ratio: 16/9; max-width: 100%; max-height: 100%; height: 100%;"
+        style="aspect-ratio: 16/9; width: 100%; height: auto; max-width: 100%; max-height: 100%;"
         @mousedown="onMouseDown($event, 'move')"
       >
         <!-- Video Stream Canvas -->
