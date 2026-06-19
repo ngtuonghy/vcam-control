@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, watch } from 'vue';
+import { ref, watch, shallowRef } from 'vue';
 import { relaunch } from '@tauri-apps/plugin-process';
 
 export const useUiStore = defineStore('ui', () => {
@@ -36,7 +36,7 @@ export const useUiStore = defineStore('ui', () => {
   // Updater State
   const updateState = ref<'idle' | 'checking' | 'downloading' | 'ready'>('idle');
   const updateDownloadProgress = ref(0);
-  const readyUpdate = ref<any>(null);
+  const readyUpdate = shallowRef<any>(null);
 
   async function checkAppUpdate(silent = true) {
     if (updateState.value !== 'idle') return null;
