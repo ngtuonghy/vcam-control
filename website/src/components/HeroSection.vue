@@ -8,11 +8,18 @@ const downloadUrl = ref<string>('https://github.com/ngtuonghy/vcam-control/relea
 
 async function fetchLatestRelease() {
   try {
-    const response = await fetch('https://api.github.com/repos/ngtuonghy/vcam-control/releases/latest')
+    const response = await fetch('https://api.github.com/repos/ngtuonghy/vcam-control/releases')
     if (response.ok) {
-      const data = await response.json()
-      const asset = data.assets.find((a: any) => a.name.endsWith('-setup.exe') || a.name.endsWith('.exe'))
-      if (asset) downloadUrl.value = asset.browser_download_url
+      const releases = await response.json()
+      if (Array.isArray(releases)) {
+        for (const release of releases) {
+          const asset = release.assets.find((a: any) => a.name.endsWith('-setup.exe') || a.name.endsWith('.exe'))
+          if (asset) {
+            downloadUrl.value = asset.browser_download_url
+            break
+          }
+        }
+      }
     }
   } catch (error) {
     console.error(error)
