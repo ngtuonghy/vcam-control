@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.5](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.2.4...vcam-control-v0.2.5) (2026-06-19)
+
+
+### Bug Fixes
+
+* **assets:** auto-center new images on canvas ([893cf4c](https://github.com/ngtuonghy/vcam-control/commit/893cf4ceeab39ca798952504228366ded1e6d53d))
+
 ## [0.2.4](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.2.3...vcam-control-v0.2.4) (2026-06-19)
 
 
