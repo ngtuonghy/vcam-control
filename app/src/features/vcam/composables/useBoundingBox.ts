@@ -72,8 +72,9 @@ export function useBoundingBox(
           const sourceW = t.sourceWidth || 1920;
           const sourceH = t.sourceHeight || 1080;
           if (!e.shiftKey) {
-            const newW = (startScaleX * sourceW) + deltaX;
-            const newScale = Math.max(0.05, newW / sourceW);
+            const scaleXCandidate = startScaleX + deltaX / sourceW;
+            const scaleYCandidate = startScaleY + deltaY / sourceH;
+            const newScale = Math.max(0.05, Math.abs(deltaX) > Math.abs(deltaY) ? scaleXCandidate : scaleYCandidate);
             t.scaleX = newScale;
             t.scaleY = newScale;
           } else {
@@ -107,8 +108,9 @@ export function useBoundingBox(
           const sourceW = t.sourceWidth || 1920;
           const sourceH = t.sourceHeight || 1080;
           if (!e.shiftKey) {
-            const newW = (startScaleX * sourceW) - deltaX;
-            const newScale = Math.max(0.05, newW / sourceW);
+            const scaleXCandidate = startScaleX - deltaX / sourceW;
+            const scaleYCandidate = startScaleY - deltaY / sourceH;
+            const newScale = Math.max(0.05, Math.abs(deltaX) > Math.abs(deltaY) ? scaleXCandidate : scaleYCandidate);
             t.positionX = startPosX + (startScaleX - newScale) * sourceW;
             t.positionY = startPosY + (startScaleY - newScale) * sourceH;
             t.scaleX = newScale;
@@ -132,8 +134,9 @@ export function useBoundingBox(
           const sourceW = t.sourceWidth || 1920;
           const sourceH = t.sourceHeight || 1080;
           if (!e.shiftKey) {
-            const newW = (startScaleX * sourceW) - deltaX;
-            const newScale = Math.max(0.05, newW / sourceW);
+            const scaleXCandidate = startScaleX - deltaX / sourceW;
+            const scaleYCandidate = startScaleY + deltaY / sourceH;
+            const newScale = Math.max(0.05, Math.abs(deltaX) > Math.abs(deltaY) ? scaleXCandidate : scaleYCandidate);
             t.positionX = startPosX + (startScaleX - newScale) * sourceW;
             t.scaleX = newScale;
             t.scaleY = newScale;
@@ -154,8 +157,9 @@ export function useBoundingBox(
           const sourceW = t.sourceWidth || 1920;
           const sourceH = t.sourceHeight || 1080;
           if (!e.shiftKey) {
-            const newW = (startScaleX * sourceW) + deltaX;
-            const newScale = Math.max(0.05, newW / sourceW);
+            const scaleXCandidate = startScaleX + deltaX / sourceW;
+            const scaleYCandidate = startScaleY - deltaY / sourceH;
+            const newScale = Math.max(0.05, Math.abs(deltaX) > Math.abs(deltaY) ? scaleXCandidate : scaleYCandidate);
             t.positionY = startPosY + (startScaleY - newScale) * sourceH;
             t.scaleX = newScale;
             t.scaleY = newScale;

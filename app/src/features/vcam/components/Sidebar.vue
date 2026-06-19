@@ -75,6 +75,13 @@ const sortableOptions = {
 }
 
 useSortable(groupListRef, displayGroups, sortableOptions as any)
+
+const vFocus = {
+  mounted: (el: HTMLElement) => {
+    const input = el.tagName === 'INPUT' ? el : el.querySelector('input')
+    if (input) input.focus()
+  }
+}
 </script>
 
 <template>
@@ -83,61 +90,59 @@ useSortable(groupListRef, displayGroups, sortableOptions as any)
     <div class="px-4 py-2 flex items-center justify-between border-b border-border/40 shrink-0 h-10">
       <span class="text-xs text-muted-foreground uppercase tracking-widest font-semibold">{{ t('sidebar.scenes') }}</span>
       <div class="flex items-center gap-1">
-        <Dialog v-model:open="isAddGroupOpen">
-          <DialogTrigger asChild>
-            <Button variant="ghost" size="icon" class="h-6 w-6 text-muted-foreground hover:text-foreground">
-              <Plus class="w-3.5 h-3.5" />
-            </Button>
-          </DialogTrigger>
-        <DialogContent class="sm:max-w-[400px] bg-card border-border text-card-foreground">
-          <DialogHeader>
-            <DialogTitle>{{ t('sidebar.add_scene_dialog') }}</DialogTitle>
-          </DialogHeader>
-          <div class="py-4">
-            <Input v-model="newGroupName" :placeholder="t('sidebar.scene_name_placeholder')" @keyup.enter="handleAddGroup" class="bg-secondary border-border" />
-          </div>
-          <DialogFooter>
-            <Button class="bg-primary text-primary-foreground hover:bg-primary/90" @click="handleAddGroup">{{ t('sidebar.add') }}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <Button variant="ghost" size="icon" class="h-6 w-6 text-muted-foreground hover:text-foreground" @click="isAddGroupOpen = true; newGroupName = ''">
+          <Plus class="w-3.5 h-3.5" />
+        </Button>
       </div>
     </div>
     
     <!-- Scene List (Vertical) -->
     <div class="flex-1 w-full overflow-y-auto custom-scrollbar p-2.5 flex flex-col gap-2" ref="groupListRef">
+      <!-- Inline Add Form -->
+      <div v-if="isAddGroupOpen" class="group relative flex items-center gap-3 p-2 rounded-md cursor-pointer transition-all border border-border/60 bg-secondary/10 w-full">
+        <div class="w-16 h-10 rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center border border-border/40 bg-surface relative">
+          <Clapperboard class="w-4 h-4 text-muted-foreground/30" />
+        </div>
+        <div class="flex-1 min-w-0 pr-1 flex flex-col justify-center">
+          <input 
+            v-model="newGroupName" 
+            :placeholder="t('sidebar.scene_name_placeholder')"
+            class="h-5 text-xs font-semibold bg-transparent border-none outline-none w-full placeholder:text-muted-foreground/50 placeholder:font-normal text-foreground"
+            @blur="handleAddGroup"
+            @keyup.enter="handleAddGroup"
+            @keyup.esc="isAddGroupOpen = false"
+            v-focus
+          />
+        </div>
+      </div>
+
       <template v-if="displayGroups.length > 0">
         <div 
           v-for="group in displayGroups" 
           :key="group.id"
           @click="handleSelectScene(group.id)"
-          class="group relative flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all border select-none w-full"
+          class="group relative flex items-center gap-3 p-2 rounded-md cursor-pointer transition-all border select-none w-full"
           :class="(assetStore.activeGroupId === group.id && !uiStore.isGeneratorOpen)
             ? 'bg-accent/5 border-accent/30 text-accent font-medium shadow-sm' 
             : 'border-border/60 text-muted-foreground hover:bg-secondary/40 hover:text-foreground bg-secondary/10'"
         >
-          <!-- Active indicator bar -->
-          <div 
-            v-if="assetStore.activeGroupId === group.id && !uiStore.isGeneratorOpen" 
-            class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r bg-accent"
-          ></div>
           
           <!-- Thumbnail (on left) -->
           <div class="w-16 h-10 rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center border border-border/40 bg-surface relative">
-            <span v-if="!group.images.length" class="text-[8px] text-muted-foreground/60 italic">—</span>
+            <Clapperboard v-if="!group.images.length" class="w-4 h-4 text-muted-foreground/30" />
             <img v-else :src="getAssetUrl(group.images[0].path)" class="w-full h-full object-cover" draggable="false" />
           </div>
           
           <!-- Name & Assets Count (on right) -->
           <div class="flex-1 min-w-0 pr-1 flex flex-col justify-center">
             <div v-if="editingGroupId === group.id" class="w-full">
-              <Input 
+              <input 
                 v-model="editingGroupName" 
-                class="h-5 text-[10px] bg-surface border-border py-0 px-1 w-full"
+                class="h-5 text-xs font-semibold bg-transparent border-none outline-none w-full text-foreground"
                 @blur="saveEdit"
                 @keyup.enter="saveEdit"
                 @click.stop
-                autofocus
+                v-focus
               />
             </div>
             <template v-else>
@@ -157,10 +162,10 @@ useSortable(groupListRef, displayGroups, sortableOptions as any)
           </div>
         </div>
       </template>
-      <div v-else class="flex-1 flex flex-col items-center justify-center py-12 px-4 text-center gap-3">
-        <Clapperboard class="w-10 h-10 text-muted-foreground/60 stroke-[1.5] animate-pulse" />
-        <p class="text-xs text-muted-foreground/80">{{ t('sidebar.empty_scenes') }}</p>
-        <Button size="sm" class="bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs px-4" @click="isAddGroupOpen = true">
+      <div v-else-if="!isAddGroupOpen" class="flex-1 flex flex-col items-center justify-center py-12 px-4 text-center gap-3">
+        <Clapperboard class="w-10 h-10 text-muted-foreground/60 stroke-[1.5] opacity-50" />
+        <p class="text-[11px] text-muted-foreground/80">{{ t('sidebar.empty_scenes') }}</p>
+        <Button size="sm" variant="outline" class="h-8 text-xs px-3 border-border/50 bg-secondary/20 hover:bg-secondary/60 transition-all" @click="isAddGroupOpen = true; newGroupName = ''">
           <Plus class="w-3.5 h-3.5 mr-1.5" /> {{ t('sidebar.create_scene') }}
         </Button>
       </div>

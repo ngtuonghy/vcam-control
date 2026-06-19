@@ -63,22 +63,22 @@ onMounted(() => {
     <!-- Right: Global Actions -->
     <div class="flex items-center justify-end gap-2.5 flex-1">
       <!-- Update Indicator -->
-      <div v-if="uiStore.updateState === 'ready' || uiStore.updateState === 'downloading'" class="flex items-center mr-1">
+      <div v-if="uiStore.updateState === 'ready' || uiStore.updateState === 'downloading'" class="flex items-center mr-2">
         <Button 
           v-if="uiStore.updateState === 'ready'"
           size="sm" 
-          variant="outline"
-          class="h-7 text-[10px] px-2.5 bg-accent/10 border-accent text-accent hover:bg-accent/20 rounded-full"
+          variant="ghost"
+          class="h-7 text-[11px] px-3 font-semibold text-accent bg-accent/10 hover:!bg-accent/20 hover:!text-accent border-0 rounded-md transition-all"
           @click="uiStore.installAppUpdate()"
         >
-          <RefreshCw class="w-3 h-3 mr-1.5" />
+          <RefreshCw class="w-3.5 h-3.5 mr-1.5" />
           {{ t('settings.restart_to_update') }}
         </Button>
         <div 
           v-else-if="uiStore.updateState === 'downloading'"
-          class="flex items-center h-7 text-[10px] px-2.5 text-muted-foreground rounded-full border border-border bg-secondary/30"
+          class="flex items-center h-7 text-[11px] font-medium px-3 text-muted-foreground rounded-md bg-secondary/50"
         >
-          <Loader2 class="w-3 h-3 mr-1.5 animate-spin" />
+          <Loader2 class="w-3.5 h-3.5 mr-1.5 animate-spin" />
           {{ t('settings.downloading_update') }} {{ uiStore.updateDownloadProgress }}%
         </div>
       </div>

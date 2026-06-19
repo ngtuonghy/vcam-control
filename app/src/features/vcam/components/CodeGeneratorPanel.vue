@@ -108,17 +108,17 @@ onUnmounted(() => {
       <div class="p-4 pb-0 flex flex-col gap-6 shrink-0">
         
         <!-- Code Type Selector -->
-        <div class="flex flex-wrap gap-2 pb-2">
+        <div class="grid grid-cols-2 gap-1.5 pt-1">
           <button
             v-for="type in types"
             :key="type.id"
             @click="codeType = type.id"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold tracking-wide whitespace-nowrap transition-all border"
+            class="flex items-center gap-2 px-3 py-2 rounded-md text-[11px] font-medium transition-all border"
             :class="codeType === type.id 
-              ? 'bg-accent text-white border-accent shadow-sm' 
-              : 'bg-surface text-muted-foreground border-border hover:bg-secondary hover:text-foreground'"
+              ? 'bg-accent/10 text-accent border-accent/40 shadow-sm ring-1 ring-accent/20' 
+              : 'bg-surface text-muted-foreground border-border/40 hover:bg-secondary hover:text-foreground hover:border-border'"
           >
-            <component :is="type.icon" class="w-3.5 h-3.5" />
+            <component :is="type.icon" class="w-3.5 h-3.5 opacity-80" />
             {{ type.label }}
           </button>
         </div>
@@ -126,15 +126,21 @@ onUnmounted(() => {
         <!-- Dynamic Form Fields -->
         <div class="space-y-4">
           <template v-if="codeType === 'url'">
-            <div class="flex items-center gap-4 mb-2">
-              <label class="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
-                <input type="radio" v-model="qrSubtype" value="url" class="accent-accent w-3.5 h-3.5" />
-                <span>{{ t('generator.website_url') }}</span>
-              </label>
-              <label class="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
-                <input type="radio" v-model="qrSubtype" value="text" class="accent-accent w-3.5 h-3.5" />
-                <span>{{ t('generator.plain_text') }}</span>
-              </label>
+            <div class="flex bg-secondary/50 p-0.5 rounded-md mb-2 border border-border/50">
+              <button 
+                class="flex-1 py-1.5 text-xs font-medium rounded-sm transition-all"
+                :class="qrSubtype === 'url' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+                @click="qrSubtype = 'url'"
+              >
+                {{ t('generator.website_url') }}
+              </button>
+              <button 
+                class="flex-1 py-1.5 text-xs font-medium rounded-sm transition-all"
+                :class="qrSubtype === 'text' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+                @click="qrSubtype = 'text'"
+              >
+                {{ t('generator.plain_text') }}
+              </button>
             </div>
 
             <div v-if="qrSubtype === 'url'" class="space-y-1.5">
@@ -227,7 +233,7 @@ onUnmounted(() => {
           </Button>
           <Button 
             v-if="uiStore.generatorMode === 'asset'"
-            class="flex-1 bg-secondary/80 hover:bg-secondary text-secondary-foreground font-semibold h-8 text-xs transition-all border border-border/50 rounded-md"
+            class="flex-1 bg-accent hover:bg-accent/90 text-white font-semibold h-8 text-xs shadow-md shadow-accent/20 transition-all rounded-md"
             @click="handleSaveToScene"
             :title="t('generator.save_to_scene')"
           >
@@ -244,10 +250,10 @@ onUnmounted(() => {
             <div 
               v-for="item in assetStore.generatorHistory" 
               :key="item.id"
-              class="group/item flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-all"
+              class="group/item flex items-center gap-3 p-2 rounded-md border cursor-pointer transition-all"
               :class="[
                 assetStore.liveCodeOverride?.id === item.id 
-                  ? 'border-accent bg-accent/10 shadow-sm ring-1 ring-accent/50' 
+                  ? 'border-accent/40 bg-accent/5 shadow-sm' 
                   : 'border-border/40 bg-secondary/5 hover:bg-secondary/20 hover:border-border/60'
               ]"
               @click="handleHistoryClick(item)"

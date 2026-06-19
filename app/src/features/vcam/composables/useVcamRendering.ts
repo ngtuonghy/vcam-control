@@ -19,6 +19,20 @@ export function useVcamRendering(activeImage: Ref<ImageItem | null>) {
 
   activeImageElement.onload = () => {
     isImageLoaded.value = true;
+    const img = activeImage.value;
+    if (img && img.transform) {
+      if (!img.transform.sourceWidth || !img.transform.sourceHeight) {
+        img.transform.sourceWidth = activeImageElement.naturalWidth || 1920;
+        img.transform.sourceHeight = activeImageElement.naturalHeight || 1080;
+        
+        // Center the image if it was just added at 0,0
+        if (img.transform.positionX === 0 && img.transform.positionY === 0) {
+          img.transform.positionX = (1920 - img.transform.sourceWidth) / 2;
+          img.transform.positionY = (1080 - img.transform.sourceHeight) / 2;
+        }
+        assetStore.saveData();
+      }
+    }
     drawAndSendFrame();
   };
 
@@ -37,13 +51,13 @@ export function useVcamRendering(activeImage: Ref<ImageItem | null>) {
 
     // Background
     ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, 1280, 720);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     if (img) {
       if (img.transform) {
-        const s = 1280.0 / 1920.0;
+        const s = 1.0;
         const t = img.transform;
-        const sw = activeImageElement.naturalWidth || 1920;
-        const sh = activeImageElement.naturalHeight || 1080;
+        const sw = activeImageElement.naturalWidth || canvas.width;
+        const sh = activeImageElement.naturalHeight || canvas.height;
         
         let w = t.boundsWidth || 1000;
         let h = t.boundsHeight || 600;
@@ -105,14 +119,14 @@ export function useVcamRendering(activeImage: Ref<ImageItem | null>) {
       }
     } else if (assetStore.activeGroup && assetStore.currentImageIndex === -1 && !assetStore.liveCodeOverride) {
       ctx.fillStyle = '#555';
-      ctx.font = '20px Inter, sans-serif';
+      ctx.font = '30px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(t('preview.no_image_selected'), 640, 360);
+      ctx.fillText(t('preview.no_image_selected'), 960, 540);
     } else {
       ctx.fillStyle = '#555';
-      ctx.font = '20px Inter, sans-serif';
+      ctx.font = '30px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(t('preview.no_scene_selected'), 640, 360);
+      ctx.fillText(t('preview.no_scene_selected'), 960, 540);
     }
   }
 
@@ -252,6 +266,7 @@ export function useVcamRendering(activeImage: Ref<ImageItem | null>) {
     updateRustVcamScene
   };
 }
+
 
 
 

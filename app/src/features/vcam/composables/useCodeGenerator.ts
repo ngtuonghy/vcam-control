@@ -142,9 +142,9 @@ export function useCodeGenerator() {
     return previousCode?.transform ? JSON.parse(JSON.stringify(previousCode.transform)) : {
       alignment: 0,
       boundsAlignment: 0,
-      boundsHeight: 800,
-      boundsType: "OBS_BOUNDS_SCALE_INNER",
-      boundsWidth: 1200,
+      boundsHeight: 0,
+      boundsType: "OBS_BOUNDS_NONE",
+      boundsWidth: 0,
       cropBottom: 0, cropLeft: 0, cropRight: 0, cropTop: 0,
       positionX: 360, positionY: 140, rotation: 0, scaleX: 1, scaleY: 1
     };

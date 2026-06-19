@@ -44,7 +44,7 @@ const currentResolutionLabel = computed(() => {
         <!-- LEFT: Scenes Sidebar -->
         <SidebarWidget 
           v-show="uiStore.isScenesSidebarOpen" 
-          class="w-[180px] xl:w-[240px] flex-shrink-0 border-r border-border" 
+          class="w-[240px] xl:w-[280px] flex-shrink-0 border-r border-border" 
         />
 
         <!-- CENTER: Preview Canvas -->
@@ -55,7 +55,7 @@ const currentResolutionLabel = computed(() => {
         <!-- RIGHT: Asset Library Sidebar -->
         <div 
           v-show="uiStore.isAssetSidebarOpen" 
-          class="w-[220px] xl:w-[300px] flex-shrink-0 border-l border-border bg-card"
+          class="w-[260px] xl:w-[320px] flex-shrink-0 border-l border-border bg-card"
         >
           <AssetLibraryWidget />
         </div>
