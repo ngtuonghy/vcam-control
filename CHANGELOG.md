@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.2.1...vcam-control-v0.2.2) (2026-06-19)
+
+
+### Bug Fixes
+
+* **app:** fix live preview aspect ratio distortion ([8d1f264](https://github.com/ngtuonghy/vcam-control/commit/8d1f264b3e92dc91f314d626b78aad9e58f54b58))
+
 ## [0.2.1](https://github.com/ngtuonghy/vcam-control/compare/vcam-control-v0.2.0...vcam-control-v0.2.1) (2026-06-19)
 
 
